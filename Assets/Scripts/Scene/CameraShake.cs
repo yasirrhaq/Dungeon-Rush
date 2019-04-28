@@ -9,8 +9,12 @@ public class CameraShake : MonoBehaviour
     public AudioSource _mAudio;
     private GameObject player;
 
+    public static CameraShake instance;
+    public bool playerDead;
+
     void Start()
     {
+        instance = this;
         StopAllCoroutines();
         player = GameObject.FindGameObjectWithTag("Player");
     }
@@ -18,10 +22,15 @@ public class CameraShake : MonoBehaviour
     void Update()
     {
         Vector3 screenToPoint = Camera.main.WorldToViewportPoint(player.transform.position);
-        bool offPosition = screenToPoint.y < 0.4;
-        if (offPosition)
+        bool offPosition = screenToPoint.y < 0.25;
+        if (offPosition && !playerDead)
         {
             StartCoroutine(Shake(duration, magnitude));
+        }
+
+        if (playerDead)
+        {
+            _mAudio.Stop();
         }
     }
 
@@ -30,30 +39,23 @@ public class CameraShake : MonoBehaviour
     {
         Vector3 originalPos = transform.localPosition;
         float elapsed = 0.0f;
-
-        PlayAudio();
+        
+        _mAudio.Play();
 
         while (elapsed < duration)
-        {
-            float x = Random.Range(-1f, 1f) * magnitude;
-            float y = Random.Range(-1f, 1f) * magnitude;
+            {
+                float x = Random.Range(-1f, 1f) * magnitude;
+                float y = Random.Range(-1f, 1f) * magnitude;
 
-            transform.localPosition = new Vector3(x, y, originalPos.z);
+                transform.localPosition = new Vector3(x, y, originalPos.z);
 
-            elapsed += Time.deltaTime;
+                elapsed += Time.deltaTime;
 
-            yield return null;
-        }
+                yield return null;
+            }
+        
 
         transform.localPosition = originalPos;
     }
 
-    void PlayAudio()
-    {
-        if (GetComponent<AudioSource>())
-        {
-            _mAudio = GetComponent<AudioSource>();
-            _mAudio.Play();
-        }
-    }
 }

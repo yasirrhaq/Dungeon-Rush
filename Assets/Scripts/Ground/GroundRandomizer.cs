@@ -6,6 +6,11 @@ public class GroundRandomizer : MonoBehaviour
 {
     public GameObject[] _groundPrefab;
 
+    private void Start()
+    {
+        RandomGround();
+    }
+
     public void RandomGround()
     {
         for(int i=0; i<_groundPrefab.Length; i++)
@@ -15,5 +20,15 @@ public class GroundRandomizer : MonoBehaviour
         _groundPrefab[Random.Range(0, _groundPrefab.Length)].SetActive(true);
 
         
+    }
+
+    void Update()
+    {
+        Vector3 screenToPoint = Camera.main.WorldToViewportPoint(transform.position);
+        bool offPosition = screenToPoint.y < -1;
+        if (offPosition)
+        {
+            RandomGround();
+        }
     }
 }

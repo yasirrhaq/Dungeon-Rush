@@ -4,19 +4,18 @@ using UnityEngine;
 
 public class DoubleJump : MonoBehaviour
 {
-    public float speed;
-    public float jumpForce;
-
-    private bool isGrounded;
     public Transform groundCheck;
     public float checkRadius;
     public LayerMask whatIsGround;
 
     private int extraJumps;
     public int extraJumpsValues;
-    private float moveInput;
 
     public Rigidbody2D rb;
+
+    public CharacterController2D controller;
+
+    public Animator animator;
     // Start is called before the first frame update
     void Awake()
     {
@@ -26,28 +25,37 @@ public class DoubleJump : MonoBehaviour
 
     private void FixedUpdate()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, whatIsGround);
-        moveInput = Input.GetAxis("Horizontal");
-        Debug.Log(moveInput);
-        rb.velocity = new Vector2(moveInput * speed, rb.velocity.y);
+        controller.GroundCheck();
+        //moveInput = Input.GetAxis("Horizontal");
+        //Debug.Log(moveInput);
+        //rb.velocity = new Vector2(moveInput * speed, rb.velocity.y);
     }
     // Update is called once per frame
     void Update()
     {
-        if (isGrounded == true)
+        if (controller.m_Grounded == true)
         {
             extraJumps = extraJumpsValues;
-            Debug.Log("extra Jumps sekarang: "+extraJumps);
+
         }
-        if (Input.GetKeyDown(KeyCode.UpArrow) &&  extraJumps > 0)
+        if (Input.GetButtonDown("Jump") &&  extraJumps > 0)
         {
-            rb.velocity = Vector2.up * jumpForce;
+            rb.velocity = Vector2.up * controller.m_JumpForce;
             extraJumps--;
-            Debug.Log(extraJumps);
+
         }
-        //else if (Input.GetKeyDown(KeyCode.UpArrow) &&  extraJumps == 0 && isGrounded == true)
-        //{
-        //    rb.velocity = Vector2.up * jumpForce;
-        //}
+        else if (Input.GetButtonDown("Jump") && extraJumps == 0 && controller.m_Grounded == true)
+        {
+            rb.velocity = Vector2.up * controller.m_JumpForce;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Wall")
+        {
+            animator.SetBool("isStickToWall", true);
+            extraJumps = 1;
+        }
     }
 }
